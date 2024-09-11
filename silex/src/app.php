@@ -8,13 +8,28 @@ require __DIR__. '/../vendor/autoload.php';
 $app = new Silex\Application();
 $app['debug']=true;
 
-$app->match('/', function(Request $request){
-    return new Response(getContent($request->query->all()));
+$app->get('/', function(){
+    return new Response(getContent());
 });
 
-function getContent($parameters){
-    $name = $parameters['name'] ?? 'ANONYME';
-    return "This is my firt page $name";
+$app->post('/submit', function(Request $request){
+    return new Response(postContent($request->request));
+});
+
+
+function getContent(){
+    $template = <<<EOF
+<form method="POST" action="app.php/submit">
+    <input name="name">
+    <button type="submit">Send</button>
+</form>
+EOF;
+    return $template;
+}
+
+function postContent($request){
+    $name = $request->get('name');
+    return sprintf('Hello %s', $name);
 }
 
 $app->run();
