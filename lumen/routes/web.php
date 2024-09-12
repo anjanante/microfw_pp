@@ -14,5 +14,11 @@
 */
 
 $router->get('/', function () use ($router) {
-    return $router->app->version();
+    return "Hello";
 });
+
+// $router->get('user/{id}', function ($id) {
+//     return 'User '.$id;
+// });
+
+$router->get('user/{id}', 'UserController@show');
