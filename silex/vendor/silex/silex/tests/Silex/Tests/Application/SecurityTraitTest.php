@@ -11,21 +11,22 @@
 
 namespace Silex\Tests\Application;
 
-use PHPUnit\Framework\TestCase;
 use Silex\Provider\SecurityServiceProvider;
 use Symfony\Component\Security\Core\User\User;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
+ * SecurityTrait test cases.
+ *
  * @author Fabien Potencier <fabien@symfony.com>
  */
-class SecurityTraitTest extends TestCase
+class SecurityTraitTest extends \PHPUnit_Framework_TestCase
 {
     public function testEncodePassword()
     {
-        $app = $this->createApplication([
-            'fabien' => ['ROLE_ADMIN', '$2y$15$lzUNsTegNXvZW3qtfucV0erYBcEqWVeyOmjolB7R1uodsAVJ95vvu'],
-        ]);
+        $app = $this->createApplication(array(
+            'fabien' => array('ROLE_ADMIN', '$2y$15$lzUNsTegNXvZW3qtfucV0erYBcEqWVeyOmjolB7R1uodsAVJ95vvu'),
+        ));
 
         $user = new User('foo', 'bar');
         $password = 'foo';
@@ -51,10 +52,10 @@ class SecurityTraitTest extends TestCase
     {
         $request = Request::create('/');
 
-        $app = $this->createApplication([
-            'fabien' => ['ROLE_ADMIN', '$2y$15$lzUNsTegNXvZW3qtfucV0erYBcEqWVeyOmjolB7R1uodsAVJ95vvu'],
-            'monique' => ['ROLE_USER',  '$2y$15$lzUNsTegNXvZW3qtfucV0erYBcEqWVeyOmjolB7R1uodsAVJ95vvu'],
-        ]);
+        $app = $this->createApplication(array(
+            'fabien' => array('ROLE_ADMIN', '$2y$15$lzUNsTegNXvZW3qtfucV0erYBcEqWVeyOmjolB7R1uodsAVJ95vvu'),
+            'monique' => array('ROLE_USER',  '$2y$15$lzUNsTegNXvZW3qtfucV0erYBcEqWVeyOmjolB7R1uodsAVJ95vvu'),
+        ));
         $app->get('/', function () { return 'foo'; });
 
         // User is Monique (ROLE_USER)
@@ -72,17 +73,17 @@ class SecurityTraitTest extends TestCase
         $this->assertTrue($app->isGranted('ROLE_ADMIN'));
     }
 
-    public function createApplication($users = [])
+    public function createApplication($users = array())
     {
         $app = new SecurityApplication();
-        $app->register(new SecurityServiceProvider(), [
-            'security.firewalls' => [
-                'default' => [
+        $app->register(new SecurityServiceProvider(), array(
+            'security.firewalls' => array(
+                'default' => array(
                     'http' => true,
                     'users' => $users,
-                ],
-            ],
-        ]);
+                ),
+            ),
+        ));
 
         return $app;
     }

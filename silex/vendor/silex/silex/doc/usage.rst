@@ -4,11 +4,17 @@ Usage
 Installation
 ------------
 
-If you want to get started fast, use the `Silex Skeleton`_:
+If you want to get started fast, `download`_ Silex as an archive and extract
+it, you should have the following directory structure:
 
-.. code-block:: bash
+.. code-block:: text
 
-    composer create-project fabpot/silex-skeleton path/to/install "~2.0"
+    ├── composer.json
+    ├── composer.lock
+    ├── vendor
+    │   └── ...
+    └── web
+        └── index.php
 
 If you want more flexibility, use Composer_ instead:
 
@@ -516,31 +522,10 @@ setting a more specific type hint for the Closure argument::
 
     As Silex ensures that the Response status code is set to the most
     appropriate one depending on the exception, setting the status on the
-    response alone won't work.
-
-    If you want to overwrite the status code, which you should not without a
-    good reason, set the ``X-Status-Code`` header (on Symfony until version
-    3.2)::
+    response won't work. If you want to overwrite the status code, set the
+    ``X-Status-Code`` header::
 
         return new Response('Error', 404 /* ignored */, array('X-Status-Code' => 200));
-
-    As of Symfony 3.3, call
-    ``GetResponseForExceptionEvent::allowCustomResponseCode()`` first and then
-    then set the status code on the response as normal. The kernel will now use
-    your status code when sending the response to the client. The
-    ``GetResponseForExceptionEvent`` is passed to the error callback as a 4th
-    parameter::
-
-        use Symfony\Component\HttpFoundation\Response;
-        use Symfony\Component\HttpFoundation\Request;
-        use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
-
-        $app->error(function (\Exception $e, Request $request, $code, GetResponseForExceptionEvent $event) {
-            $event->allowCustomResponseCode();
-            $response = new Response('No Content', 204);
-            
-            return $response;
-        });
 
 If you want to use a separate error handler for logging, make sure you register
 it with a higher priority than response error handlers, because once a response
@@ -812,7 +797,7 @@ Cross-Site-Scripting attacks.
           return $app->json(array('name' => $name));
       });
 
-.. _Silex Skeleton: http://github.com/silexphp/Silex-Skeleton
+.. _download: http://silex.sensiolabs.org/download
 .. _Composer: http://getcomposer.org/
 .. _Request: http://api.symfony.com/master/Symfony/Component/HttpFoundation/Request.html
 .. _Response: http://api.symfony.com/master/Symfony/Component/HttpFoundation/Response.html

@@ -11,9 +11,6 @@
 
 namespace Symfony\Component\HttpFoundation;
 
-// Help opcache.preload discover always-needed symbols
-class_exists(AcceptHeaderItem::class);
-
 /**
  * Represents an Accept-* header.
  *
@@ -27,7 +24,7 @@ class AcceptHeader
     /**
      * @var AcceptHeaderItem[]
      */
-    private $items = [];
+    private $items = array();
 
     /**
      * @var bool
@@ -35,6 +32,8 @@ class AcceptHeader
     private $sorted = true;
 
     /**
+     * Constructor.
+     *
      * @param AcceptHeaderItem[] $items
      */
     public function __construct(array $items)
@@ -49,23 +48,18 @@ class AcceptHeader
      *
      * @param string $headerValue
      *
-     * @return self
+     * @return AcceptHeader
      */
     public static function fromString($headerValue)
     {
         $index = 0;
 
-        $parts = HeaderUtils::split((string) $headerValue, ',;=');
-
-        return new self(array_map(function ($subParts) use (&$index) {
-            $part = array_shift($subParts);
-            $attributes = HeaderUtils::combine($subParts);
-
-            $item = new AcceptHeaderItem($part[0], $attributes);
+        return new self(array_map(function ($itemValue) use (&$index) {
+            $item = AcceptHeaderItem::fromString($itemValue);
             $item->setIndex($index++);
 
             return $item;
-        }, $parts));
+        }, preg_split('/\s*(?:,*("[^"]+"),*|,*(\'[^\']+\'),*|,+)\s*/', $headerValue, 0, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE)));
     }
 
     /**
@@ -99,13 +93,15 @@ class AcceptHeader
      */
     public function get($value)
     {
-        return $this->items[$value] ?? $this->items[explode('/', $value)[0].'/*'] ?? $this->items['*/*'] ?? $this->items['*'] ?? null;
+        return isset($this->items[$value]) ? $this->items[$value] : null;
     }
 
     /**
      * Adds an item.
      *
-     * @return $this
+     * @param AcceptHeaderItem $item
+     *
+     * @return AcceptHeader
      */
     public function add(AcceptHeaderItem $item)
     {
@@ -132,7 +128,7 @@ class AcceptHeader
      *
      * @param string $pattern
      *
-     * @return self
+     * @return AcceptHeader
      */
     public function filter($pattern)
     {
@@ -156,10 +152,10 @@ class AcceptHeader
     /**
      * Sorts items by descending quality.
      */
-    private function sort(): void
+    private function sort()
     {
         if (!$this->sorted) {
-            uasort($this->items, function (AcceptHeaderItem $a, AcceptHeaderItem $b) {
+            uasort($this->items, function ($a, $b) {
                 $qA = $a->getQuality();
                 $qB = $b->getQuality();
 

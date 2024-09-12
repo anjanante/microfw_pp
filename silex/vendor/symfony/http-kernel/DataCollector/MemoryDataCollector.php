@@ -18,35 +18,23 @@ use Symfony\Component\HttpFoundation\Response;
  * MemoryDataCollector.
  *
  * @author Fabien Potencier <fabien@symfony.com>
- *
- * @final since Symfony 4.4
  */
 class MemoryDataCollector extends DataCollector implements LateDataCollectorInterface
 {
     public function __construct()
     {
-        $this->reset();
+        $this->data = array(
+            'memory' => 0,
+            'memory_limit' => $this->convertToBytes(ini_get('memory_limit')),
+        );
     }
 
     /**
      * {@inheritdoc}
-     *
-     * @param \Throwable|null $exception
      */
-    public function collect(Request $request, Response $response/* , \Throwable $exception = null */)
+    public function collect(Request $request, Response $response, \Exception $exception = null)
     {
         $this->updateMemoryUsage();
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function reset()
-    {
-        $this->data = [
-            'memory' => 0,
-            'memory_limit' => $this->convertToBytes(\ini_get('memory_limit')),
-        ];
     }
 
     /**
@@ -93,10 +81,7 @@ class MemoryDataCollector extends DataCollector implements LateDataCollectorInte
         return 'memory';
     }
 
-    /**
-     * @return int|float
-     */
-    private function convertToBytes(string $memoryLimit)
+    private function convertToBytes($memoryLimit)
     {
         if ('-1' === $memoryLimit) {
             return -1;
@@ -104,21 +89,18 @@ class MemoryDataCollector extends DataCollector implements LateDataCollectorInte
 
         $memoryLimit = strtolower($memoryLimit);
         $max = strtolower(ltrim($memoryLimit, '+'));
-        if (str_starts_with($max, '0x')) {
-            $max = \intval($max, 16);
-        } elseif (str_starts_with($max, '0')) {
-            $max = \intval($max, 8);
+        if (0 === strpos($max, '0x')) {
+            $max = intval($max, 16);
+        } elseif (0 === strpos($max, '0')) {
+            $max = intval($max, 8);
         } else {
             $max = (int) $max;
         }
 
         switch (substr($memoryLimit, -1)) {
             case 't': $max *= 1024;
-            // no break
             case 'g': $max *= 1024;
-            // no break
             case 'm': $max *= 1024;
-            // no break
             case 'k': $max *= 1024;
         }
 
