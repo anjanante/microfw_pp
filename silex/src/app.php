@@ -1,7 +1,6 @@
 <?php
 
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
 
 require __DIR__. '/../vendor/autoload.php';
 require __DIR__. '/services/Template.php';
